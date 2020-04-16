@@ -15,10 +15,31 @@ public class ConversationMetricsCalculator {
     List<Message> messages = conversation.getMessages();
 
     // implement me!
+    int responseCounter = 0;
+    long totalResponseTimes = 0;
+    long leadUserMessageTime = 0;
+    boolean needResponse = false;
+    double averageResponseTime = 0.0;
+
+    for(Message msg: messages){
+      if(!msg.isTeamMember() && !needResponse){
+        needResponse = true;
+        leadUserMessageTime = msg.getCreatedAt();
+      }
+      if(msg.isTeamMember() && needResponse){
+        needResponse = false;
+        totalResponseTimes += msg.getCreatedAt() - leadUserMessageTime;
+        responseCounter++;
+      }
+    }
+
+    if(!needResponse){
+      averageResponseTime = (double)totalResponseTimes / responseCounter;
+    }
 
     return ConversationResponseMetric.builder()
         .setConversationId(conversation.getId())
-        .setAverageResponseMs(0)
+        .setAverageResponseMs(averageResponseTime)
         .build();
   }
 }
